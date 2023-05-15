@@ -1,126 +1,93 @@
 // import thing from ./place.jsx
-import{BrowserRouter, Routes, Route, Link, useParams, useSearchParams, useNavigate} from 'react-router-dom';
+import{Routes, Route, useParams, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
 function App() {
-  const [urlExtension, setUrlExtension] = useState('');
-  const [planet, setPlanet] = useState({name: false});
-  const [person, setPerson] = useState({name: false});
-  const {id} = useParams();
-  const {type} = useParams();
-  console.log(`id: ${id}\ntype: ${type}`);
 
-  const GrabFromApi = (props) =>{
-    // const {id} = useParams();
-    // const {type} = useParams();
-    // let currentUrlExtension = `${type}/${id}`;
-    let currentUrlExtension = `people/${id}`;
-    console.log(`currentURLExtension: ${currentUrlExtension}`);
-    // const url = window.location.href;
-    // let currentUrlExtension = '';
-    // if (url.includes('people')){
-    //   currentUrlExtension = `people/${url.slice(url.length-2)}`;
-    // } else if (url.includes('planets')) {
-    //   currentUrlExtension = `planets/${url.slice(url.length-2)}`;
-    // } else {
-    //   currentUrlExtension = urlExtension;
-    // }
-    // axios.get('https://swapi.dev/api/' + currentUrlExtension)
-    //   .then(response => {
-    //     if (response.data.height !== undefined){
-    //       setPerson({
-    //         name: response.data.name,
-    //         height: response.data.height,
-    //         mass: response.data.mass,
-    //         hair: response.data.hair_color,
-    //         skin: response.data.skin_color
-    //       });
-    //       setPlanet({name: false});
-    //     } else if (response.data.climate !== undefined) {
-    //       setPlanet({
-    //         name: response.data.name,
-    //         climate: response.data.climate,
-    //         terrain: response.data.terrain,
-    //         water: (response.data.surface_water === '1'? 'true': 'false'),
-    //         population: response.data.population
-    //       });
-    //       setPerson({name: false});
-    //     };
-    //     return response.data;
-    //   }).catch(error=>{
-    //     console.log(error);
-    //   });
-    return (
-      <h1>API call finished</h1>
-    );
-  }
-
-  const DisplayPlanets = (props) =>{
-    if (planet.name !== false){
+  const DisplayHouse = (props) =>{
+    const [house, setHouse] = useState({});
+    const {id} = useParams();
+    useEffect(() => {
+      axios.get(`https://anapioficeandfire.com/api/houses/${id}`)
+        .then(response => {
+          setHouse({
+            name: response.data.name,
+            region: response.data.region,
+            words: response.data.words,
+            founded: response.data.founded,
+          });
+        }).catch(error=>{
+          console.log(error);
+        });
+    },[id]);
+    if (house.name !== false){
       return(
         <>
-          <h2 className='my-4'>{planet.name}</h2>
-          <p><strong>Climate: </strong>{planet.climate}</p>
-          <p><strong>Terrain: </strong>{planet.terrain}</p>
-          <p><strong>Surface Water: </strong>{planet.water}</p>
-          <p><strong>Population: </strong>{planet.population}</p>
+          <h2 className='my-4'>{house.name}</h2>
+          <p><strong>Region: </strong>{house.region}</p>
+          <p><strong>Words: </strong>{house.words}</p>
+          <p><strong>Founded: </strong>{house.founded}</p>
         </>
       );
     }
   }
 
-  const DisplayPeople = (props) =>{
-    if (person.name !== false){
+  const DisplayCharacter = (props) =>{
+    const [character, setCharacter] = useState({});
+    const {id} = useParams();
+    useEffect(() => {
+      axios.get(`https://anapioficeandfire.com/api/characters/${id}`)
+        .then(response => {
+          setCharacter({
+            name: response.data.name,
+            gender: response.data.gender,
+            born: response.data.born,
+            culture: response.data.culture,
+          });
+        }).catch(error=>{
+          console.log(error);
+        });
+    },[id]);
       return(
         <>
-          <h2 className='my-4'>{person.name}</h2>
-          <p><strong>Height: </strong>{person.height}</p>
-          <p><strong>Mass: </strong>{person.mass}</p>
-          <p><strong>Hair Color: </strong>{person.hair}</p>
-          <p><strong>Skin Color: </strong>{person.skin}</p>
+          <h2 className='my-4'>{character.name}</h2>
+          <p><strong>Gender: </strong>{character.gender}</p>
+          <p><strong>Born: </strong>{character.born}</p>
+          <p><strong>Culture: </strong>{character.culture}</p>
         </>
       );
-    }
-  }
+}
 
   const SearchForm = (props) => {
+    const [id, setId] = useState('583');
+    const [type, setType] = useState('characters');
+    const navigate = useNavigate();
+    const HandleSubmit = (e) => {
+      e.preventDefault();
+      const url = `/${type}/${id}`;
+      navigate(url);
+    }
     return(
-      <form className='d-flex' onSubmit={e => handleSubmit(e)}>
+      <form className='d-flex' onSubmit={HandleSubmit}>
         <label htmlFor="selectFilter" className='me-2'>Search&nbsp;for:</label>
-        <select name="selectFilter" id="selectFilter" className='form-control me-4'>
-          <option value="people">People</option>
-          <option value="planets">Planets</option>
+        <select name="selectFilter" id="selectFilter" className='form-control me-4' onChange={e => setType(e.target.value)} value={type}>
+          <option value="characters">Characters</option>
+          <option value="houses">Houses</option>
         </select>
         <label htmlFor="idSearch" className='me-2'>ID:</label>
-        <input type="number" name="idSearch" id="idSearch" className='form-control me-4' />
+        <input type="number" name="idSearch" id="idSearch" className='form-control me-4' onChange={e => setId(e.target.value)} value={id}/>
         <button className="btn btn-primary" type='submit'>Search</button>
       </form>
     );
   }
 
-  const handleSubmit = (props) => {
-    props.preventDefault();
-    const url = `${props.target[0].value}/${props.target[1].value}/`;
-    setUrlExtension(url);
-    // useNavigate(url);
-    // GrabFromApi();
-  }
-
-  const Home = (props) => {
-    // <SearchForm/>
-  }
-
   return (
     <div className="container mt-3">
-      {/* <button className="btn btn-primary m-3" onClick={GrabFromApi}>fetch stuff</button> */}
       <SearchForm/>
-      {/* <DisplayPlanets/> */}
-      {/* <DisplayPeople/> */}
       <Routes>
-        <Route path='/' element={<Home/>}/>
-        <Route path='planets/:id' element={<DisplayPlanets/>}/>
-        <Route path='people/:id' element={<DisplayPeople/>}/>
+        <Route path='/houses/:id' element={<DisplayHouse/>}/>
+        <Route path='/characters/:id' element={<DisplayCharacter/>}/>
       </Routes>
     </div>
   );
